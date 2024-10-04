@@ -1,18 +1,17 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>User List</title>
-  <link rel="stylesheet" type="text/css" href="styles.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/styles.css">
 </head>
 <body>
 <h2>User List</h2>
 
-<hr>
-
-<h3>Existing Users</h3>
-<table border="1">
+<table>
   <thead>
   <tr>
     <th>Id</th>
@@ -35,24 +34,16 @@
         <form action="users" method="POST" style="display:inline;">
           <input type="hidden" name="action" value="delete">
           <input type="hidden" name="id" value="${user.id}">
-          <input type="submit" value="Delete" onclick="return confirm('Are you sure you want to delete this user?');">
+          <input type="submit" value="Delete" class="delete-btn">
         </form>
-        <form action="users" method="GET" style="display:inline;">
-          <input type="hidden" name="action" value="edit">
-          <input type="hidden" name="userId" value="${user.id}">
-          <input type="submit" value="Edit">
-        </form>
+        <a href="users?action=edit&id=${user.id}" class="edit-link">Edit</a>
       </td>
     </tr>
   </c:forEach>
-  <c:if test="${empty users}">
-    <tr>
-      <td colspan="5">No users found.</td>
-    </tr>
-  </c:if>
   </tbody>
 </table>
-<hr>
-<a href="index.jsp">Add New User</a>
+
+<a href="users/add" class="add-link">Add New User</a>
+
 </body>
 </html>

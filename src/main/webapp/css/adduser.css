@@ -1,0 +1,144 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f4f6f9;
+    min-height: 100vh;
+    margin: 0;
+}
+
+/* Banner Section */
+.banner {
+    background: linear-gradient(45deg, #007BFF, #00C6FF); /* Gradient background */
+    width: 100%;
+    padding: 60px 0;
+    text-align: center;
+    color: white;
+    box-sizing: border-box;
+}
+
+.banner h1 {
+    font-size: 36px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.banner p {
+    font-size: 18px;
+    margin-bottom: 0;
+}
+
+/* Container to hold the form */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    max-width: 100%;
+}
+
+/* Form container */
+form {
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    max-width: 100%;
+    margin-top: 30px;
+}
+
+/* Form groups */
+form div {
+    margin-bottom: 20px;
+}
+
+/* Labels */
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Inputs and select */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+select:focus {
+    border-color: #007BFF;
+    outline: none;
+}
+
+/* Submit button */
+input[type="submit"] {
+    width: 100%;
+    padding: 14px 0;
+    background-color: #007BFF;
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+input[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+/* Back link */
+a {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    color: #007BFF;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Media queries for mobile responsiveness */
+@media (max-width: 500px) {
+    form {
+        width: 100%;
+        padding: 20px;
+    }
+
+    input[type="submit"] {
+        padding: 12px 0;
+        font-size: 14px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    label {
+        font-size: 12px;
+    }
+}
