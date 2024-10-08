@@ -62,4 +62,12 @@ public class UserRepositoryHibernate {
             e.printStackTrace();
         }
     }
+
+    public User findByEmail(String email) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("FROM User WHERE email = :email", User.class)
+                    .setParameter("email", email)
+                    .uniqueResult();
+        }
+    }
 }

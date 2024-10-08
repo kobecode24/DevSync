@@ -34,7 +34,7 @@
     </select><br>
 
     <label for="tags">Tags (comma-separated):</label>
-    <input type="text" id="tags" name="tags" value="${task.tags.join(',')}"><br>
+    <input type="text" id="tags" name="tags" value="${tagsAsString}"><br>
 
     <input type="submit" value="Update Task" class="submit-btn">
 </form>

@@ -1,72 +1,63 @@
 package org.devsyc.service;
 
 import org.devsyc.domain.entities.Task;
-import org.devsyc.domain.entities.User;
-import org.devsyc.domain.enums.TaskStatus;
-import org.devsyc.repository.TaskRepository;
+import org.devsyc.dto.TaskDTO;
+import org.devsyc.repository.TaskRepositoryHibernate;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TaskService {
-    private TaskRepository taskRepository;
+    private TaskRepositoryHibernate taskRepository;
 
-    public TaskService(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
+    public TaskService() {
+        this.taskRepository = new TaskRepositoryHibernate();
     }
 
-    public void createTask(Task task) {
-        validateTask(task);
-        taskRepository.save(task);
-    }
-
-    public void updateTask(Task task) {
-        validateTask(task);
-        taskRepository.update(task);
-    }
-
-    public void deleteTask(Task task) {
-        taskRepository.delete(task);
+    public List<TaskDTO> getAllTaskDTOs() {
+        List<Task> tasks = taskRepository.findAll();
+        return tasks.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     public Task getTaskById(Long id) {
         return taskRepository.findById(id);
     }
 
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+    public TaskDTO getTaskDTOById(Long id) {
+        Task task = taskRepository.findById(id);
+        return task != null ? convertToDTO(task) : null;
     }
 
-    public List<Task> getTasksByUser(User user) {
-        return taskRepository.findByUser(user);
+    public void createTask(Task task) {
+        taskRepository.save(task);
     }
 
-    public void markTaskAsDone(Task task) {
-        if (task.getDueDate().isBefore(LocalDateTime.now())) {
-            throw new IllegalStateException("Cannot mark a task as done after its due date");
-        }
-        task.setStatus(TaskStatus.DONE);
-        task.setCompletionDate(LocalDateTime.now());
+    public void updateTask(Task task) {
         taskRepository.update(task);
     }
 
-    public void updateOverdueTasks() {
-        List<Task> overdueTasks = taskRepository.findOverdueTasks(LocalDateTime.now());
-        for (Task task : overdueTasks) {
-            task.setStatus(TaskStatus.TODO);
-            taskRepository.update(task);
+    public void deleteTask(Long id) {
+        Task task = taskRepository.findById(id);
+        if (task != null) {
+            taskRepository.delete(task);
         }
     }
 
-    private void validateTask(Task task) {
-        if (task.getDueDate().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Task due date cannot be in the past");
-        }
-        if (task.getDueDate().isAfter(LocalDateTime.now().plusDays(3))) {
-            throw new IllegalArgumentException("Task cannot be scheduled more than 3 days in advance");
-        }
-        if (task.getTags() == null || task.getTags().size() < 2) {
-            throw new IllegalArgumentException("Task must have at least 2 tags");
-        }
+    private TaskDTO convertToDTO(Task task) {
+        String assignedUserName = task.getAssignedUser() != null
+                ? task.getAssignedUser().getFirstName() + " " + task.getAssignedUser().getLastName()
+                : "Unassigned";
+
+        return new TaskDTO(
+                task.getId(),
+                task.getTitle(),
+                task.getDescription(),
+                task.getDueDate(),
+                task.getStatus(),
+                task.getTags(),
+                assignedUserName
+        );
     }
 }
