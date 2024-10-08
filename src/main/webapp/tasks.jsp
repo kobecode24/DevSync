@@ -35,7 +35,10 @@
       <td>${task.tags}</td>
       <td>
         <a href="${pageContext.request.contextPath}/tasks/edit/${task.id}" class="edit-link">Edit</a>
-        <a href="${pageContext.request.contextPath}/tasks/delete/${task.id}" class="delete-link" onclick="return confirm('Are you sure?')">Delete</a>
+        <form action="${pageContext.request.contextPath}/tasks/delete/${task.id}" method="post" class="delete-form">
+          <input type="hidden" name="taskId" value="${task.id}">
+          <button type="submit" class="delete-btn">Delete</button>
+        </form>
       </td>
     </tr>
   </c:forEach>

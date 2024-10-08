@@ -14,6 +14,8 @@ public class TaskService {
         this.taskRepository = new TaskRepositoryHibernate();
     }
 
+
+
     public List<TaskDTO> getAllTaskDTOs() {
         List<Task> tasks = taskRepository.findAll();
         return tasks.stream()
@@ -38,11 +40,13 @@ public class TaskService {
         taskRepository.update(task);
     }
 
-    public void deleteTask(Long id) {
+    public boolean deleteTask(Long id) {
         Task task = taskRepository.findById(id);
         if (task != null) {
             taskRepository.delete(task);
+            return true;
         }
+        return false;
     }
 
     private TaskDTO convertToDTO(Task task) {

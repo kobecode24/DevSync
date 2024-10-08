@@ -79,7 +79,6 @@ public class TaskServlet extends HttpServlet {
         Task task = taskService.getTaskById(taskId);
         List<User> users = userService.getAllUsers();
 
-        // Convert tags to comma-separated string for JSP
         String tagsAsString = String.join(",", task.getTags());
 
         req.setAttribute("task", task);
@@ -103,9 +102,23 @@ public class TaskServlet extends HttpServlet {
     }
 
     private void deleteTask(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        Long taskId = Long.parseLong(req.getPathInfo().split("/")[2]);
-        taskService.deleteTask(taskId);
-        resp.sendRedirect(req.getContextPath() + "/tasks");
+        String pathInfo = req.getPathInfo();
+        String[] pathParts = pathInfo.split("/");
+        if (pathParts.length == 3) {
+            try {
+                Long taskId = Long.parseLong(pathParts[2]);
+                boolean deleted = taskService.deleteTask(taskId);
+                if (deleted) {
+                    resp.sendRedirect(req.getContextPath() + "/tasks");
+                } else {
+                    resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Task not found");
+                }
+            } catch (NumberFormatException e) {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid task ID");
+            }
+        } else {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid delete request");
+        }
     }
 
     private Task createTaskFromRequest(HttpServletRequest req) {

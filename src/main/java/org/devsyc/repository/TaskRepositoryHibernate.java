@@ -75,9 +75,11 @@ public class TaskRepositoryHibernate implements TaskRepository {
     @Override
     public void delete(Task task) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Transaction tx = session.beginTransaction();
+            Transaction transaction = session.beginTransaction();
             session.delete(task);
-            tx.commit();
+            transaction.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
