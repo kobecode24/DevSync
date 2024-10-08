@@ -73,7 +73,7 @@ public class UserServlet extends HttpServlet {
         String password = req.getParameter("password");
         Role role = Role.valueOf(req.getParameter("role"));
 
-        User newUser = new User(null, firstName, lastName, email, password, role);
+        User newUser = new User(firstName, lastName, email, password, role);
         userRepository.save(newUser);
     }
 
@@ -85,13 +85,26 @@ public class UserServlet extends HttpServlet {
         String password = req.getParameter("password");
         Role role = Role.valueOf(req.getParameter("role"));
 
-        User user = new User(userId, firstName, lastName, email, password, role);
-        userRepository.update(user);
+        User user = userRepository.findById(userId);
+        if (user != null) {
+            user.setFirstName(firstName);
+            user.setLastName(lastName);
+            user.setEmail(email);
+            user.setPassword(password);
+            user.setRole(role);
+            userRepository.update(user);
+        } else {
+            throw new IllegalArgumentException("User not found with id: " + userId);
+        }
     }
 
     private void deleteUser(HttpServletRequest req) {
         Long userId = Long.valueOf(req.getParameter("id"));
         User user = userRepository.findById(userId);
-        userRepository.delete(user);
+        if (user != null) {
+            userRepository.delete(user);
+        } else {
+            throw new IllegalArgumentException("User not found with id: " + userId);
+        }
     }
 }

@@ -1,0 +1,145 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f4f6f9;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center;
+}
+
+/* Table Styling */
+table {
+    width: 90%;
+    max-width: 1000px;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background-color: #fff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+table th, table td {
+    padding: 12px 15px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    color: #333;
+}
+
+table th {
+    background-color: #007BFF;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Button and Link Styling */
+.add-task-btn {
+    background-color: #28a745;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 16px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.add-task-btn:hover {
+    background-color: #218838;
+}
+
+.submit-btn {
+    background-color: #007BFF;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+    background-color: #0056b3;
+}
+
+.edit-link {
+    color: #007BFF;
+    text-decoration: none;
+    padding: 8px 12px;
+    border: 1px solid #007BFF;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s ease;
+}
+
+.edit-link:hover {
+    background-color: #007BFF;
+    color: white;
+}
+
+.delete-link {
+    color: #e74c3c;
+    text-decoration: none;
+    padding: 8px 12px;
+    border: 1px solid #e74c3c;
+    border-radius: 4px;
+    margin-left: 5px;
+    transition: background-color 0.3s, color 0.3s ease;
+}
+
+.delete-link:hover {
+    background-color: #e74c3c;
+    color: white;
+}
+
+/* Form Styling */
+form {
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    max-width: 100%;
+    margin-top: 20px;
+}
+
+form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+    color: #555;
+}
+
+form input[type="text"],
+form input[type="datetime-local"],
+form textarea,
+form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
