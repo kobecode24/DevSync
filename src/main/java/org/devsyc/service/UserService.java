@@ -4,6 +4,7 @@ import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.devsyc.domain.entities.User;
+import org.devsyc.repository.UserRepositoryHibernate;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 public class UserService {
     @PersistenceContext
     private EntityManager em;
+    private UserRepositoryHibernate UserRepositoryHibernate = new UserRepositoryHibernate();
 
     public List<User> getAllUsers() {
         return em.createQuery("SELECT u FROM User u", User.class).getResultList();
@@ -72,5 +74,21 @@ public class UserService {
             return true;
         }
         return false;
+    }
+
+    public void resetAllTokens() {
+        List<User> users = UserRepositoryHibernate.findAll();
+        LocalDate today = LocalDate.now();
+
+        for (User user : users) {
+            if (!user.getLastTokenReset().isEqual(today)) {
+                user.resetDailyTokens();
+                if (today.getMonthValue() != user.getLastTokenReset().getMonthValue()) {
+                    user.resetMonthlyTokens();
+                }
+                user.setLastTokenReset(today);
+                UserRepositoryHibernate.update(user);
+            }
+        }
     }
 }

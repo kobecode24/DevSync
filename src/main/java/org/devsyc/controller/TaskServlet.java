@@ -120,14 +120,17 @@ public class TaskServlet extends HttpServlet {
         if (pathParts.length == 3) {
             try {
                 Long taskId = Long.parseLong(pathParts[2]);
-                boolean deleted = taskService.deleteTask(taskId);
+                Long userId = Long.parseLong(req.getParameter("userId"));
+                boolean deleted = taskService.deleteTask(taskId, userId);
                 if (deleted) {
                     resp.sendRedirect(req.getContextPath() + "/tasks");
                 } else {
                     resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Task not found");
                 }
             } catch (NumberFormatException e) {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid task ID");
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid task ID or user ID");
+            } catch (IllegalStateException e) {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
             }
         } else {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid delete request");
@@ -151,7 +154,7 @@ public class TaskServlet extends HttpServlet {
             Long taskId = Long.parseLong(req.getParameter("taskId"));
             Long userId = Long.parseLong(req.getParameter("userId"));
             User user = userService.getUserById(userId);
-            taskService.assignTaskToSelf(taskId, user);
+            taskService.assignTaskToSelf(taskId, user.getId());
             resp.sendRedirect(req.getContextPath() + "/tasks");
         } catch (IllegalArgumentException | IllegalStateException e) {
             req.setAttribute("error", e.getMessage());

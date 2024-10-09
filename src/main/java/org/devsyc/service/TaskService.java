@@ -5,6 +5,7 @@ import org.devsyc.domain.entities.User;
 import org.devsyc.domain.enums.TaskStatus;
 import org.devsyc.dto.TaskDTO;
 import org.devsyc.repository.TaskRepositoryHibernate;
+import org.devsyc.repository.UserRepositoryHibernate;
 import org.hibernate.Hibernate;
 
 import java.time.LocalDateTime;
@@ -13,9 +14,11 @@ import java.util.stream.Collectors;
 
 public class TaskService {
     private TaskRepositoryHibernate taskRepository;
+    private UserRepositoryHibernate userRepository;
 
     public TaskService() {
         this.taskRepository = new TaskRepositoryHibernate();
+        this.userRepository = new UserRepositoryHibernate();
     }
 
     public List<TaskDTO> getAllTaskDTOs() {
@@ -45,17 +48,32 @@ public class TaskService {
         taskRepository.update(task);
     }
 
-    public boolean deleteTask(Long id) {
-        Task task = taskRepository.findById(id);
-        if (task != null) {
-            taskRepository.delete(task);
-            return true;
+    public boolean deleteTask(Long taskId, Long userId) throws IllegalStateException {
+        Task task = taskRepository.findById(taskId);
+        User user = userRepository.findById(userId);
+
+        if (task == null || user == null) {
+            return false;
         }
-        return false;
+
+        if (task.getCreatedBy().getId().equals(userId)) {
+            taskRepository.delete(task);
+        } else if (user.useDeletionToken()) {
+            taskRepository.delete(task);
+            userRepository.update(user);
+        } else {
+            throw new IllegalStateException("No deletion tokens available.");
+        }
+        return true;
     }
 
     public List<TaskDTO> getTasksForUser(long userId) {
         List<Task> tasks = taskRepository.findByAssignedUserId(userId);
+        return tasks.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    public List<TaskDTO> getAvailableTasks() {
+        List<Task> tasks = taskRepository.findByAssignedUserIsNull();
         return tasks.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
@@ -70,14 +88,40 @@ public class TaskService {
         }
     }
 
-    public void assignTaskToSelf(Long taskId, User user) {
+    public void assignTaskToSelf(Long taskId, Long userId) throws IllegalStateException {
         Task task = taskRepository.findById(taskId);
-        if (task != null) {
-            if (task.getAssignedUser() != null && !task.getAssignedUser().getId().equals(user.getId())) {
-                throw new IllegalStateException("Cannot assign a task that is already assigned to someone else");
-            }
+        User user = userRepository.findById(userId);
+
+        if (task == null || user == null) {
+            throw new IllegalStateException("Task or User not found");
+        }
+
+        if (task.getAssignedUser() != null) {
+            throw new IllegalStateException("This task is already assigned.");
+        }
+
+        task.setAssignedUser(user);
+        taskRepository.update(task);
+    }
+
+    public void replaceTask(Long taskId, Long userId) throws IllegalStateException {
+        Task task = taskRepository.findById(taskId);
+        User user = userRepository.findById(userId);
+
+        if (task == null || user == null) {
+            throw new IllegalStateException("Task or User not found");
+        }
+
+        if (task.getAssignedUser().getId().equals(userId)) {
+            throw new IllegalStateException("You cannot replace a task assigned to yourself.");
+        }
+
+        if (user.useReplacementToken()) {
             task.setAssignedUser(user);
             taskRepository.update(task);
+            userRepository.update(user);
+        } else {
+            throw new IllegalStateException("No replacement tokens available.");
         }
     }
 
