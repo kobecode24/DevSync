@@ -102,13 +102,22 @@ public class TaskServlet extends HttpServlet {
     }
 
     private void deleteTask(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String taskIdStr = req.getParameter("id");
-        if (taskIdStr != null) {
-            Long taskId = Long.parseLong(taskIdStr);
-            taskService.deleteTask(taskId);
-            resp.sendRedirect(req.getContextPath() + "/tasks");
+        String pathInfo = req.getPathInfo();
+        String[] pathParts = pathInfo.split("/");
+        if (pathParts.length == 3) {
+            try {
+                Long taskId = Long.parseLong(pathParts[2]);
+                boolean deleted = taskService.deleteTask(taskId);
+                if (deleted) {
+                    resp.sendRedirect(req.getContextPath() + "/tasks");
+                } else {
+                    resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Task not found");
+                }
+            } catch (NumberFormatException e) {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid task ID");
+            }
         } else {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Task ID is required");
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid delete request");
         }
     }
 
