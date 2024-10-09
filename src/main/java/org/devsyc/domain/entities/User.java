@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.devsyc.domain.enums.Role;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String firstName;
     private String lastName;
     private String email;
@@ -33,11 +35,38 @@ public class User {
     @Column(name = "deletion_tokens")
     private int deletionTokens = 1;
 
+    @Column(name = "last_token_reset")
+    private LocalDate lastTokenReset = LocalDate.now();
+
     public User(String firstName, String lastName, String email, String password, Role role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
         this.role = role;
+    }
+
+    public void resetDailyTokens() {
+        this.replacementTokens = 2;
+    }
+
+    public void resetMonthlyTokens() {
+        this.deletionTokens = 1;
+    }
+
+    public boolean useReplacementToken() {
+        if (replacementTokens > 0) {
+            replacementTokens--;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean useDeletionToken() {
+        if (deletionTokens > 0) {
+            deletionTokens--;
+            return true;
+        }
+        return false;
     }
 }

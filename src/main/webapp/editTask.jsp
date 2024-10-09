@@ -8,6 +8,10 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/Task/styles.css">
 </head>
 <body>
+<c:if test="${not empty error}">
+    <div class="error-message">${error}</div>
+</c:if>
+
 <h1>Edit Task</h1>
 <form action="${pageContext.request.contextPath}/tasks/edit/${task.id}" method="post">
     <label for="title">Title:</label>
@@ -38,5 +42,30 @@
 
     <input type="submit" value="Update Task" class="submit-btn">
 </form>
+
+<script>
+    document.querySelector('form').addEventListener('submit', function(e) {
+        var tags = document.getElementById('tags').value.split(',').filter(tag => tag.trim() !== '');
+        if (tags.length < 2) {
+            e.preventDefault();
+            alert('Please enter at least 2 tags.');
+        }
+    });
+
+    document.getElementById('dueDate').addEventListener('change', function() {
+        var selectedDate = new Date(this.value);
+        var now = new Date();
+        var maxDate = new Date();
+        maxDate.setDate(now.getDate() + 3);
+
+        if (selectedDate < now) {
+            alert('Due date cannot be in the past.');
+            this.value = '';
+        } else if (selectedDate > maxDate) {
+            alert('Due date cannot be more than 3 days in the future.');
+            this.value = '';
+        }
+    });
+</script>
 </body>
 </html>

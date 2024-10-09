@@ -21,6 +21,10 @@
   </style>
 </head>
 <body>
+<c:if test="${not empty error}">
+  <div class="error-message">${error}</div>
+</c:if>
+
 <h1>Employee Tasks</h1>
 <table>
   <tr>
@@ -29,6 +33,7 @@
     <th>Due Date</th>
     <th>Status</th>
     <th>Assigned To</th>
+    <th>Tags</th>
     <th>Action</th>
   </tr>
   <c:forEach var="task" items="${tasks}">
@@ -38,6 +43,16 @@
       <td>${task.dueDate}</td>
       <td>${task.status}</td>
       <td>${task.assignedUserName}</td>
+      <td>
+        <c:catch var="tagException">
+          <c:forEach var="tag" items="${task.tags}" varStatus="loop">
+            ${tag}<c:if test="${!loop.last}">, </c:if>
+          </c:forEach>
+        </c:catch>
+        <c:if test="${not empty tagException}">
+          Unable to load tags
+        </c:if>
+      </td>
       <td>
         <form action="${pageContext.request.contextPath}/employee-tasks" method="post">
           <input type="hidden" name="taskId" value="${task.id}">
@@ -54,5 +69,21 @@
 </table>
 <br>
 <a href="${pageContext.request.contextPath}/tasks">Back to Manager View</a>
+
+<script>
+  document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      var statusSelect = this.querySelector('select[name="status"]');
+      var taskId = this.querySelector('input[name="taskId"]').value;
+      var currentDate = new Date();
+      var dueDate = new Date(this.closest('tr').querySelector('td:nth-child(3)').textContent);
+
+      if (statusSelect.value === 'DONE' && dueDate < currentDate) {
+        e.preventDefault();
+        alert('Cannot mark task as complete after the deadline');
+      }
+    });
+  });
+</script>
 </body>
 </html>

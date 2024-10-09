@@ -1,65 +1,76 @@
 package org.devsyc.service;
 
+import jakarta.ejb.Stateless;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.devsyc.domain.entities.User;
-import org.devsyc.repository.UserRepositoryHibernate;
 
+import java.time.LocalDate;
 import java.util.List;
 
+@Stateless
 public class UserService {
-    private UserRepositoryHibernate userRepository;
-
-    public UserService() {
-        this.userRepository = new UserRepositoryHibernate();
-    }
+    @PersistenceContext
+    private EntityManager em;
 
     public List<User> getAllUsers() {
-        return userRepository.findAll();
+        return em.createQuery("SELECT u FROM User u", User.class).getResultList();
     }
 
     public User getUserById(Long id) {
-        return userRepository.findById(id);
+        return em.find(User.class, id);
     }
 
     public void createUser(User user) {
-        userRepository.save(user);
+        em.persist(user);
     }
 
     public void updateUser(User user) {
-        userRepository.update(user);
+        em.merge(user);
     }
 
     public void deleteUser(Long id) {
-        User user = userRepository.findById(id);
+        User user = getUserById(id);
         if (user != null) {
-            userRepository.delete(user);
+            em.remove(user);
         }
     }
-
-    // Additional methods for user management
 
     public User getUserByEmail(String email) {
-        // Implement this method in UserRepositoryHibernate
-        return userRepository.findByEmail(email);
+        return em.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class)
+                .setParameter("email", email)
+                .getSingleResult();
     }
 
-    public boolean isEmailUnique(String email) {
-        User user = getUserByEmail(email);
-        return user == null;
+    public void resetTokensIfNeeded(User user) {
+        LocalDate now = LocalDate.now();
+        if (!now.equals(user.getLastTokenReset())) {
+            user.resetDailyTokens();
+            if (now.getMonth() != user.getLastTokenReset().getMonth()) {
+                user.resetMonthlyTokens();
+            }
+            user.setLastTokenReset(now);
+            em.merge(user);
+        }
     }
 
-    public void resetPassword(Long userId, String newPassword) {
+    public boolean useReplacementToken(Long userId) {
         User user = getUserById(userId);
-        if (user != null) {
-            user.setPassword(newPassword);
-            updateUser(user);
+        resetTokensIfNeeded(user);
+        if (user.useReplacementToken()) {
+            em.merge(user);
+            return true;
         }
+        return false;
     }
 
-    public User authenticateUser(String email, String password) {
-        User user = getUserByEmail(email);
-        if (user != null && user.getPassword().equals(password)) {
-            return user;
+    public boolean useDeletionToken(Long userId) {
+        User user = getUserById(userId);
+        resetTokensIfNeeded(user);
+        if (user.useDeletionToken()) {
+            em.merge(user);
+            return true;
         }
-        return null;
+        return false;
     }
 }

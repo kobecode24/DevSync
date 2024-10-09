@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @WebServlet("/tasks/*")
 public class TaskServlet extends HttpServlet {
@@ -57,6 +56,10 @@ public class TaskServlet extends HttpServlet {
             updateTask(req, resp);
         } else if (pathInfo.startsWith("/delete/")) {
             deleteTask(req, resp);
+        } else if (pathInfo.equals("/updateStatus")) {
+            updateTaskStatus(req, resp);
+        } else if (pathInfo.equals("/assignSelf")) {
+            assignTaskToSelf(req, resp);
         } else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
@@ -87,18 +90,28 @@ public class TaskServlet extends HttpServlet {
         req.getRequestDispatcher("/editTask.jsp").forward(req, resp);
     }
 
-    private void addTask(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        Task task = createTaskFromRequest(req);
-        taskService.createTask(task);
-        resp.sendRedirect(req.getContextPath() + "/tasks");
+    private void addTask(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            Task task = createTaskFromRequest(req);
+            taskService.createTask(task);
+            resp.sendRedirect(req.getContextPath() + "/tasks");
+        } catch (IllegalArgumentException e) {
+            req.setAttribute("error", e.getMessage());
+            showAddForm(req, resp);
+        }
     }
 
-    private void updateTask(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        Long taskId = Long.parseLong(req.getPathInfo().split("/")[2]);
-        Task task = createTaskFromRequest(req);
-        task.setId(taskId);
-        taskService.updateTask(task);
-        resp.sendRedirect(req.getContextPath() + "/tasks");
+    private void updateTask(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            Long taskId = Long.parseLong(req.getPathInfo().split("/")[2]);
+            Task task = createTaskFromRequest(req);
+            task.setId(taskId);
+            taskService.updateTask(task);
+            resp.sendRedirect(req.getContextPath() + "/tasks");
+        } catch (IllegalArgumentException e) {
+            req.setAttribute("error", e.getMessage());
+            showEditForm(req, resp);
+        }
     }
 
     private void deleteTask(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -118,6 +131,31 @@ public class TaskServlet extends HttpServlet {
             }
         } else {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid delete request");
+        }
+    }
+
+    private void updateTaskStatus(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            Long taskId = Long.parseLong(req.getParameter("taskId"));
+            TaskStatus newStatus = TaskStatus.valueOf(req.getParameter("status"));
+            taskService.updateTaskStatus(taskId, newStatus);
+            resp.sendRedirect(req.getContextPath() + "/tasks");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            req.setAttribute("error", e.getMessage());
+            listTasks(req, resp);
+        }
+    }
+
+    private void assignTaskToSelf(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            Long taskId = Long.parseLong(req.getParameter("taskId"));
+            Long userId = Long.parseLong(req.getParameter("userId"));
+            User user = userService.getUserById(userId);
+            taskService.assignTaskToSelf(taskId, user);
+            resp.sendRedirect(req.getContextPath() + "/tasks");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            req.setAttribute("error", e.getMessage());
+            listTasks(req, resp);
         }
     }
 
