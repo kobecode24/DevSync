@@ -31,7 +31,7 @@
       <td>${task.description}</td>
       <td>${task.dueDate}</td>
       <td>${task.status}</td>
-      <td>${task.assignedUser.firstName} ${task.assignedUser.lastName}</td>
+      <td>${task.assignedUserName}</td>
       <td>${task.tags}</td>
       <td>
         <a href="${pageContext.request.contextPath}/tasks/edit/${task.id}" class="edit-link">Edit</a>
@@ -44,5 +44,6 @@
   </c:forEach>
   </tbody>
 </table>
+<a href="${pageContext.request.contextPath}/employee-tasks">Back to Manager View</a>
 </body>
 </html>

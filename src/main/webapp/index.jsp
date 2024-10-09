@@ -15,6 +15,8 @@
         <ul>
             <li><a href="users">View All Users</a></li>
             <li><a href="users/add">Add New User</a></li>
+            <li> <a href="tasks">View all tasks</a></li>
+            <li> <a href="employee-tasks">View employee tasks</a></li>
         </ul>
     </nav>
 

@@ -35,23 +35,28 @@ h1 {
 /* Style the navigation menu */
 nav ul {
     list-style: none;
-    display: flex;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;  /* Add gap to provide space between buttons */
     margin-bottom: 40px;
+    justify-items: center;  /* Center the buttons within the grid cells */
 }
 
 nav ul li {
-    margin: 0 15px;
+    display: contents;  /* Let the list items inherit the grid display */
 }
 
 nav ul li a {
     text-decoration: none;
     color: #fff;
     background-color: #3498db;
-    padding: 10px 20px;
+    padding: 15px 20px;  /* Padding to make buttons larger */
     border-radius: 5px;
     font-weight: 600;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s ease;
+    text-align: center;
+    min-width: 120px;  /* Ensure a minimum width for buttons */
+    display: block;  /* Make the anchor element take full block space */
 }
 
 nav ul li a:hover {
@@ -83,7 +88,7 @@ section ul li {
 /* Responsive Design */
 @media (max-width: 600px) {
     nav ul {
-        flex-direction: column;
+        grid-template-columns: 1fr;  /* Ensure all buttons take full width in mobile */
     }
 
     nav ul li {

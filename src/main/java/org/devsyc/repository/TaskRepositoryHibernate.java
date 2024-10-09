@@ -82,4 +82,13 @@ public class TaskRepositoryHibernate implements TaskRepository {
             e.printStackTrace();
         }
     }
+
+    public List<Task> findByAssignedUserId(Long userId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("FROM Task WHERE assignedUser.id = :userId", Task.class)
+                    .setParameter("userId", userId)
+                    .list();
+        }
+    }
+
 }

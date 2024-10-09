@@ -1,6 +1,7 @@
 package org.devsyc.service;
 
 import org.devsyc.domain.entities.Task;
+import org.devsyc.domain.enums.TaskStatus;
 import org.devsyc.dto.TaskDTO;
 import org.devsyc.repository.TaskRepositoryHibernate;
 
@@ -13,8 +14,6 @@ public class TaskService {
     public TaskService() {
         this.taskRepository = new TaskRepositoryHibernate();
     }
-
-
 
     public List<TaskDTO> getAllTaskDTOs() {
         List<Task> tasks = taskRepository.findAll();
@@ -47,6 +46,19 @@ public class TaskService {
             return true;
         }
         return false;
+    }
+
+    public List<TaskDTO> getTasksForUser(long userId) {
+        List<Task> tasks = taskRepository.findByAssignedUserId(userId);
+        return tasks.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    public void updateTaskStatus(long taskId, TaskStatus newStatus) {
+        Task task = taskRepository.findById(taskId);
+        if (task != null) {
+            task.setStatus(newStatus);
+            taskRepository.update(task);
+        }
     }
 
     private TaskDTO convertToDTO(Task task) {
