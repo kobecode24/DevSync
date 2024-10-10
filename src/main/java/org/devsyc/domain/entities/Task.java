@@ -39,7 +39,7 @@ public class Task {
     @JoinColumn(name = "created_by")
     private User createdBy;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "task_tags", joinColumns = @JoinColumn(name = "task_id"))
     @Column(name = "tag")
     private List<String> tags;

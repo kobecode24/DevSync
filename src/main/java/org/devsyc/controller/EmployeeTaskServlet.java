@@ -15,7 +15,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @WebServlet("/employee-tasks")
 public class EmployeeTaskServlet extends HttpServlet {
@@ -30,17 +33,16 @@ public class EmployeeTaskServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Long userId = (Long) req.getSession().getAttribute("userId");
-        User user = userService.getUserById(userId);
-        userService.resetTokensIfNeeded(user);
+        // Retrieve all users and their tasks
+        List<User> allUsers = userService.getAllUsers();
+        Map<User, List<TaskDTO>> userTasksMap = allUsers.stream()
+                .collect(Collectors.toMap(
+                        user -> user,
+                        user -> taskService.getTasksForUser(user.getId())
+                ));
 
-        List<TaskDTO> userTasks = taskService.getTasksForUser(userId);
-        List<TaskDTO> availableTasks = taskService.getAvailableTasks();
-
-        req.setAttribute("userTasks", userTasks);
-        req.setAttribute("availableTasks", availableTasks);
-        req.setAttribute("replacementTokens", user.getReplacementTokens());
-        req.setAttribute("deletionTokens", user.getDeletionTokens());
+        // Set attributes for JSP page
+        req.setAttribute("userTasksMap", userTasksMap);
 
         req.getRequestDispatcher("/employeeTasks.jsp").forward(req, resp);
     }
@@ -48,29 +50,48 @@ public class EmployeeTaskServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String action = req.getParameter("action");
-        Long userId = (Long) req.getSession().getAttribute("userId");
         Long taskId = Long.parseLong(req.getParameter("taskId"));
+        Long userId = Long.parseLong(req.getParameter("userId"));
 
         JsonObject jsonResponse = new JsonObject();
 
         try {
+            // Retrieve the user
+            User user = userService.getUserById(userId);
+
             switch (action) {
                 case "updateStatus":
                     String newStatus = req.getParameter("status");
                     taskService.updateTaskStatus(taskId, TaskStatus.valueOf(newStatus));
                     break;
+                case "requestEdit":
+                    // Handle request edit logic here
+                    taskService.requestEditTask(taskId, userId);
+                    break;
+                case "requestDelete":
+                    // Handle request delete logic here
+                    taskService.requestDeleteTask(taskId, userId);
+                    break;
                 case "replaceTask":
-                    taskService.replaceTask(taskId, userId);
+                    if (user.getReplacementTokens() > 0) {
+                        taskService.replaceTask(taskId, userId);
+                        userService.decrementReplacementToken(user);
+                    } else {
+                        throw new IllegalStateException("Not enough replacement tokens available.");
+                    }
                     break;
                 case "deleteTask":
-                    taskService.deleteTask(taskId, userId);
-                    break;
-                case "assignToSelf":
-                    taskService.assignTaskToSelf(taskId, userId);
+                    if (user.getDeletionTokens() > 0) {
+                        taskService.deleteTask(taskId, userId);
+                        userService.decrementDeletionToken(user);
+                    } else {
+                        throw new IllegalStateException("Not enough deletion tokens available.");
+                    }
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid action: " + action);
             }
+
             jsonResponse.addProperty("success", true);
         } catch (IllegalStateException | IllegalArgumentException e) {
             jsonResponse.addProperty("success", false);

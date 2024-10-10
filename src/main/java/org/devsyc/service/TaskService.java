@@ -1,7 +1,11 @@
 package org.devsyc.service;
 
+import jakarta.inject.Inject;
 import org.devsyc.domain.entities.Task;
+import org.devsyc.domain.entities.TaskRequest;
 import org.devsyc.domain.entities.User;
+import org.devsyc.domain.enums.RequestStatus;
+import org.devsyc.domain.enums.RequestType;
 import org.devsyc.domain.enums.TaskStatus;
 import org.devsyc.dto.TaskDTO;
 import org.devsyc.repository.TaskRepositoryHibernate;
@@ -157,4 +161,9 @@ public class TaskService {
                 assignedUserName
         );
     }
+
+
+
+
+
 }
