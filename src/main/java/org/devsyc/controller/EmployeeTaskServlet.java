@@ -65,11 +65,9 @@ public class EmployeeTaskServlet extends HttpServlet {
                     taskService.updateTaskStatus(taskId, TaskStatus.valueOf(newStatus));
                     break;
                 case "requestEdit":
-                    // Handle request edit logic here
                     taskService.requestEditTask(taskId, userId);
                     break;
                 case "requestDelete":
-                    // Handle request delete logic here
                     taskService.requestDeleteTask(taskId, userId);
                     break;
                 case "replaceTask":

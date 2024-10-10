@@ -9,6 +9,7 @@ import org.devsyc.domain.enums.RequestType;
 import org.devsyc.domain.enums.TaskStatus;
 import org.devsyc.dto.TaskDTO;
 import org.devsyc.repository.TaskRepositoryHibernate;
+import org.devsyc.repository.TaskRequestRepository;
 import org.devsyc.repository.UserRepositoryHibernate;
 import org.hibernate.Hibernate;
 
@@ -19,10 +20,12 @@ import java.util.stream.Collectors;
 public class TaskService {
     private TaskRepositoryHibernate taskRepository;
     private UserRepositoryHibernate userRepository;
+    private TaskRequestRepository taskRequestRepository;
 
     public TaskService() {
         this.taskRepository = new TaskRepositoryHibernate();
         this.userRepository = new UserRepositoryHibernate();
+        this.taskRequestRepository = new TaskRequestRepository();
     }
 
     public List<TaskDTO> getAllTaskDTOs() {
@@ -162,8 +165,62 @@ public class TaskService {
         );
     }
 
+    public void requestEditTask(Long taskId, Long userId) throws IllegalStateException {
+        Task task = taskRepository.findById(taskId);
+        User user = userRepository.findById(userId);
 
+        if (task == null || user == null) {
+            throw new IllegalStateException("Task or User not found");
+        }
 
+        if (task.getAssignedUser().getId().equals(userId)) {
+            throw new IllegalStateException("You cannot request to edit your own task.");
+        }
 
+        if (user.getReplacementTokens() <= 0) {
+            throw new IllegalStateException("Not enough replacement tokens available.");
+        }
 
+        TaskRequest request = new TaskRequest();
+        request.setTask(task);
+        request.setRequestedBy(user);
+        request.setStatus(RequestStatus.PENDING);
+        request.setType(RequestType.EDIT);
+        request.setRequestedAt(LocalDateTime.now());
+
+        taskRequestRepository.save(request);
+
+        user.setReplacementTokens(user.getReplacementTokens() - 1);
+        userRepository.update(user);
+    }
+
+    public void requestDeleteTask(Long taskId, Long userId) throws IllegalStateException {
+        Task task = taskRepository.findById(taskId);
+        User user = userRepository.findById(userId);
+
+        if (task == null || user == null) {
+            throw new IllegalStateException("Task or User not found");
+        }
+
+        if (task.getCreatedBy().getId().equals(userId)) {
+            taskRepository.delete(task);
+            return;
+        }
+
+        if (user.getDeletionTokens() <= 0) {
+            throw new IllegalStateException("Not enough deletion tokens available.");
+        }
+
+        TaskRequest request = new TaskRequest();
+        request.setTask(task);
+        request.setRequestedBy(user);
+        request.setStatus(RequestStatus.PENDING);
+        request.setType(RequestType.DELETE);
+        request.setRequestedAt(LocalDateTime.now());
+
+        taskRequestRepository.save(request);
+
+        user.setDeletionTokens(user.getDeletionTokens() - 1);
+        userRepository.update(user);
+    }
 }
