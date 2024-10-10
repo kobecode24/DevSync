@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,14 +36,42 @@ public class EmployeeTaskServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         // Retrieve all users and their tasks
         List<User> allUsers = userService.getAllUsers();
+        System.out.println("Number of users: " + allUsers.size());
+
         Map<User, List<TaskDTO>> userTasksMap = allUsers.stream()
                 .collect(Collectors.toMap(
                         user -> user,
-                        user -> taskService.getTasksForUser(user.getId())
+                        user -> {
+                            List<TaskDTO> tasks = taskService.getTasksForUser(user.getId());
+                            System.out.println("User " + user.getId() + " has " + tasks.size() + " tasks");
+                            return tasks;
+                        }
                 ));
 
+        // Format due dates as strings to avoid EL conversion issues in JSP
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        Map<User, List<Map<String, Object>>> formattedTasksMap = userTasksMap.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .map(task -> {
+                                    Map<String, Object> taskMap = new HashMap<>();
+                                    taskMap.put("id", task.getId());
+                                    taskMap.put("title", task.getTitle());
+                                    taskMap.put("description", task.getDescription());
+                                    taskMap.put("dueDate", task.getDueDate().format(formatter));
+                                    taskMap.put("status", task.getStatus());
+                                    taskMap.put("tags", task.getTags());
+                                    taskMap.put("assignedUserName", task.getAssignedUserName());
+                                    return taskMap;
+                                })
+                                .collect(Collectors.toList())
+                ));
+
+        System.out.println("Formatted tasks map size: " + formattedTasksMap.size());
+
         // Set attributes for JSP page
-        req.setAttribute("userTasksMap", userTasksMap);
+        req.setAttribute("formattedTasksMap", formattedTasksMap);
 
         req.getRequestDispatcher("/employeeTasks.jsp").forward(req, resp);
     }

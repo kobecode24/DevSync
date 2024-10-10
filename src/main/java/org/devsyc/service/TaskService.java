@@ -76,6 +76,7 @@ public class TaskService {
 
     public List<TaskDTO> getTasksForUser(long userId) {
         List<Task> tasks = taskRepository.findByAssignedUserId(userId);
+        System.out.println("Tasks found for user " + userId + ": " + tasks.size());
         return tasks.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 

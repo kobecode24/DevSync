@@ -29,50 +29,57 @@
 </head>
 <body>
 <h1>All Employees Tasks</h1>
+<p>Number of users: ${formattedTasksMap.size()}</p>
 
-<c:forEach var="entry" items="${userTasksMap}">
+<c:forEach var="entry" items="${formattedTasksMap}">
   <h2>Tasks for ${entry.key.firstName} ${entry.key.lastName} (${entry.key.email})</h2>
-  <table>
-    <tr>
-      <th>Title</th>
-      <th>Description</th>
-      <th>Due Date</th>
-      <th>Status</th>
-      <th>Tags</th>
-      <th>Actions</th>
-    </tr>
-    <c:forEach var="task" items="${entry.value}">
+  <p>Number of tasks: ${entry.value.size()}</p>
+  <c:if test="${entry.value.size() > 0}">
+    <table>
       <tr>
-        <td>${task.title}</td>
-        <td>${task.description}</td>
-        <td><fmt:formatDate value="${task.dueDate}" pattern="yyyy-MM-dd HH:mm" /></td>
-        <td>
-          <select name="status" class="status-dropdown" data-task-id="${task.id}" data-user-id="${entry.key.id}">
-            <option value="TODO" ${task.status == 'TODO' ? 'selected' : ''}>To Do</option>
-            <option value="IN_PROGRESS" ${task.status == 'IN_PROGRESS' ? 'selected' : ''}>In Progress</option>
-            <option value="DONE" ${task.status == 'DONE' ? 'selected' : ''}>Done</option>
-          </select>
-        </td>
-        <td>
-          <c:forEach var="tag" items="${task.tags}" varStatus="loop">
-            ${tag}<c:if test="${!loop.last}">, </c:if>
-          </c:forEach>
-        </td>
-        <td>
-          <form class="action-form" data-action="requestEdit">
-            <input type="hidden" name="taskId" value="${task.id}">
-            <input type="hidden" name="userId" value="${entry.key.id}">
-            <input type="submit" value="Request Edit">
-          </form>
-          <form class="action-form" data-action="requestDelete">
-            <input type="hidden" name="taskId" value="${task.id}">
-            <input type="hidden" name="userId" value="${entry.key.id}">
-            <input type="submit" value="Request Delete">
-          </form>
-        </td>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Due Date</th>
+        <th>Status</th>
+        <th>Tags</th>
+        <th>Actions</th>
       </tr>
-    </c:forEach>
-  </table>
+      <c:forEach var="task" items="${entry.value}">
+        <tr>
+          <td>${task.title}</td>
+          <td>${task.description}</td>
+          <td>${task.dueDate}</td>
+          <td>
+            <select name="status" class="status-dropdown" data-task-id="${task.id}" data-user-id="${entry.key.id}">
+              <option value="TODO" ${task.status == 'TODO' ? 'selected' : ''}>To Do</option>
+              <option value="IN_PROGRESS" ${task.status == 'IN_PROGRESS' ? 'selected' : ''}>In Progress</option>
+              <option value="DONE" ${task.status == 'DONE' ? 'selected' : ''}>Done</option>
+            </select>
+          </td>
+          <td>
+            <c:forEach var="tag" items="${task.tags}" varStatus="loop">
+              ${tag}<c:if test="${!loop.last}">, </c:if>
+            </c:forEach>
+          </td>
+          <td>
+            <form class="action-form" data-action="requestEdit">
+              <input type="hidden" name="taskId" value="${task.id}">
+              <input type="hidden" name="userId" value="${entry.key.id}">
+              <input type="submit" value="Request Edit">
+            </form>
+            <form class="action-form" data-action="requestDelete">
+              <input type="hidden" name="taskId" value="${task.id}">
+              <input type="hidden" name="userId" value="${entry.key.id}">
+              <input type="submit" value="Request Delete">
+            </form>
+          </td>
+        </tr>
+      </c:forEach>
+    </table>
+  </c:if>
+  <c:if test="${entry.value.size() == 0}">
+    <p>No tasks for this user.</p>
+  </c:if>
 </c:forEach>
 
 <a href="${pageContext.request.contextPath}/tasks">Back to Manager View</a>
