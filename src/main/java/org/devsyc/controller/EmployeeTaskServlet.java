@@ -63,6 +63,7 @@ public class EmployeeTaskServlet extends HttpServlet {
                                     taskMap.put("status", task.getStatus());
                                     taskMap.put("tags", task.getTags());
                                     taskMap.put("assignedUserName", task.getAssignedUserName());
+                                    taskMap.put("pendingRequests", task.getPendingRequests());
                                     return taskMap;
                                 })
                                 .collect(Collectors.toList())

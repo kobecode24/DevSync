@@ -45,6 +45,9 @@
         <th>Actions</th>
       </tr>
       <c:forEach var="task" items="${entry.value}">
+
+        <p>Replacement Tokens: ${entry.key.replacementTokens}</p>
+        <p>Deletion Tokens: ${entry.key.deletionTokens}</p>
         <tr>
           <td>${task.title}</td>
           <td>${task.description}</td>
@@ -82,40 +85,63 @@
   </c:if>
 </c:forEach>
 
+<th>Pending Requests</th>
+<td>
+  <c:forEach var="request" items="${task.pendingRequests}">
+    ${request.type} request by ${request.requestedBy.firstName} ${request.requestedBy.lastName}<br>
+  </c:forEach>
+</td>
+
 <a href="${pageContext.request.contextPath}/tasks">Back to Manager View</a>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const statusDropdowns = document.querySelectorAll('.status-dropdown');
+    const actionForms = document.querySelectorAll('.action-form');
+
     statusDropdowns.forEach(dropdown => {
       dropdown.addEventListener('change', function() {
-        const taskId = this.dataset.taskId;
-        const userId = this.dataset.userId;
-        const newStatus = this.value;
-        const formData = new FormData();
-        formData.append('taskId', taskId);
-        formData.append('userId', userId);
-        formData.append('status', newStatus);
-        formData.append('action', 'updateStatus');
-
-        fetch('${pageContext.request.contextPath}/employee-tasks', {
-          method: 'POST',
-          body: formData
-        })
-                .then(response => response.json())
-                .then(data => {
-                  if (data.success) {
-                    location.reload();
-                  } else {
-                    alert(data.error);
-                  }
-                })
-                .catch(error => {
-                  console.error('Error:', error);
-                  alert('An error occurred. Please try again.');
-                });
+        sendRequest(this, 'updateStatus');
       });
     });
+
+    actionForms.forEach(form => {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        sendRequest(this, this.dataset.action);
+      });
+    });
+
+    function sendRequest(element, action) {
+      const taskId = element.dataset.taskId || element.querySelector('[name="taskId"]').value;
+      const userId = element.dataset.userId || element.querySelector('[name="userId"]').value;
+      const formData = new FormData();
+      formData.append('taskId', taskId);
+      formData.append('userId', userId);
+      formData.append('action', action);
+
+      if (action === 'updateStatus') {
+        formData.append('status', element.value);
+      }
+
+      fetch('${pageContext.request.contextPath}/employee-tasks', {
+        method: 'POST',
+        body: formData
+      })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  alert('Action completed successfully!');
+                  location.reload();
+                } else {
+                  alert(data.error);
+                }
+              })
+              .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+              });
+    }
   });
 </script>
 </body>

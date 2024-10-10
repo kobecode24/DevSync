@@ -14,5 +14,6 @@
 
         <mapping class="org.devsyc.domain.entities.User"/>
         <mapping class="org.devsyc.domain.entities.Task"/>
+        <mapping class="org.devsyc.domain.entities.TaskRequest"/>
     </session-factory>
 </hibernate-configuration>

@@ -155,6 +155,8 @@ public class TaskService {
                 ? task.getAssignedUser().getFirstName() + " " + task.getAssignedUser().getLastName()
                 : "Unassigned";
 
+        List<TaskRequest> pendingRequests = taskRequestRepository.findPendingRequestsForTask(task.getId());
+
         return new TaskDTO(
                 task.getId(),
                 task.getTitle(),
@@ -162,7 +164,8 @@ public class TaskService {
                 task.getDueDate(),
                 task.getStatus(),
                 task.getTags(),
-                assignedUserName
+                assignedUserName,
+                pendingRequests
         );
     }
 

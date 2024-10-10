@@ -75,4 +75,15 @@ public class TaskRequestRepository {
     public List<TaskRequest> findPendingRequests() {
         return findByStatus(RequestStatus.PENDING);
     }
+
+    public List<TaskRequest> findPendingRequestsForTask(Long taskId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                            "FROM TaskRequest WHERE task.id = :taskId AND status = :status",
+                            TaskRequest.class)
+                    .setParameter("taskId", taskId)
+                    .setParameter("status", RequestStatus.PENDING)
+                    .list();
+        }
+    }
 }
