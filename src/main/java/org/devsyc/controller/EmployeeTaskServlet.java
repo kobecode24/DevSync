@@ -80,15 +80,25 @@ public class EmployeeTaskServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String action = req.getParameter("action");
-        Long taskId = Long.parseLong(req.getParameter("taskId"));
-        Long userId = Long.parseLong(req.getParameter("userId"));
+        String taskIdStr = req.getParameter("taskId");
+        String userIdStr = req.getParameter("userId");
 
         JsonObject jsonResponse = new JsonObject();
 
         try {
-            // Retrieve the user
+            // Check for missing parameters
+            if (action == null || taskIdStr == null || userIdStr == null) {
+                throw new IllegalArgumentException("Missing required parameters");
+            }
+
+            // Attempt to parse taskId and userId as Longs
+            Long taskId = Long.parseLong(taskIdStr);
+            Long userId = Long.parseLong(userIdStr);
+
+            // Retrieve the user based on the provided userId
             User user = userService.getUserById(userId);
 
+            // Handle the action parameter
             switch (action) {
                 case "updateStatus":
                     String newStatus = req.getParameter("status");
@@ -100,33 +110,32 @@ public class EmployeeTaskServlet extends HttpServlet {
                 case "requestDelete":
                     taskService.requestDeleteTask(taskId, userId);
                     break;
-                case "replaceTask":
-                    if (user.getReplacementTokens() > 0) {
-                        taskService.replaceTask(taskId, userId);
-                        userService.decrementReplacementToken(user);
-                    } else {
-                        throw new IllegalStateException("Not enough replacement tokens available.");
-                    }
-                    break;
-                case "deleteTask":
-                    if (user.getDeletionTokens() > 0) {
-                        taskService.deleteTask(taskId, userId);
-                        userService.decrementDeletionToken(user);
-                    } else {
-                        throw new IllegalStateException("Not enough deletion tokens available.");
-                    }
-                    break;
                 default:
                     throw new IllegalArgumentException("Invalid action: " + action);
             }
 
             jsonResponse.addProperty("success", true);
-        } catch (IllegalStateException | IllegalArgumentException e) {
+
+        } catch (NumberFormatException e) {
+            // Handle invalid taskId or userId
+            jsonResponse.addProperty("success", false);
+            jsonResponse.addProperty("error", "Invalid taskId or userId");
+
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            // Handle other application-specific exceptions
             jsonResponse.addProperty("success", false);
             jsonResponse.addProperty("error", e.getMessage());
+
+        } catch (Exception e) {
+            // Log any unexpected errors and provide a generic error message
+            e.printStackTrace(); // This will log the stack trace to your server logs
+            jsonResponse.addProperty("success", false);
+            jsonResponse.addProperty("error", "An unexpected error occurred: " + e.getMessage());
         }
 
+        // Set response content type and send the JSON response
         resp.setContentType("application/json");
         resp.getWriter().write(new Gson().toJson(jsonResponse));
     }
+
 }

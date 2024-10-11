@@ -65,14 +65,10 @@
             </c:forEach>
           </td>
           <td>
-            <form class="action-form" data-action="requestEdit">
-              <input type="hidden" name="taskId" value="${task.id}">
-              <input type="hidden" name="userId" value="${entry.key.id}">
+            <form class="action-form" data-action="requestEdit" data-task-id="${task.id}" data-user-id="${entry.key.id}">
               <input type="submit" value="Request Edit">
             </form>
-            <form class="action-form" data-action="requestDelete">
-              <input type="hidden" name="taskId" value="${task.id}">
-              <input type="hidden" name="userId" value="${entry.key.id}">
+            <form class="action-form" data-action="requestDelete" data-task-id="${task.id}" data-user-id="${entry.key.id}">
               <input type="submit" value="Request Delete">
             </form>
           </td>
@@ -113,28 +109,40 @@
     });
 
     function sendRequest(element, action) {
+      // Get taskId and userId from data attributes or hidden inputs
       const taskId = element.dataset.taskId || element.querySelector('[name="taskId"]').value;
       const userId = element.dataset.userId || element.querySelector('[name="userId"]').value;
+
+      // Check if taskId and userId are available
+      if (!taskId || !userId) {
+        alert('Missing taskId or userId');
+        return;
+      }
+
+      // Create form data
       const formData = new FormData();
       formData.append('taskId', taskId);
       formData.append('userId', userId);
       formData.append('action', action);
 
+      // If updating status, add the status parameter
       if (action === 'updateStatus') {
         formData.append('status', element.value);
       }
 
+      // Make the POST request using fetch
       fetch('${pageContext.request.contextPath}/employee-tasks', {
         method: 'POST',
         body: formData
       })
               .then(response => response.json())
               .then(data => {
+                // Handle success or error responses from the server
                 if (data.success) {
                   alert('Action completed successfully!');
-                  location.reload();
+                  location.reload(); // Optionally reload the page to reflect changes
                 } else {
-                  alert(data.error);
+                  alert(data.error || 'An error occurred');
                 }
               })
               .catch(error => {
