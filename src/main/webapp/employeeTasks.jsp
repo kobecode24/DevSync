@@ -43,11 +43,9 @@
         <th>Status</th>
         <th>Tags</th>
         <th>Actions</th>
+        <th>Pending Requests</th>
       </tr>
       <c:forEach var="task" items="${entry.value}">
-
-        <p>Replacement Tokens: ${entry.key.replacementTokens}</p>
-        <p>Deletion Tokens: ${entry.key.deletionTokens}</p>
         <tr>
           <td>${task.title}</td>
           <td>${task.description}</td>
@@ -65,12 +63,17 @@
             </c:forEach>
           </td>
           <td>
-            <form class="action-form" data-action="requestEdit" data-task-id="${task.id}" data-user-id="${entry.key.id}">
-              <input type="submit" value="Request Edit">
-            </form>
-            <form class="action-form" data-action="requestDelete" data-task-id="${task.id}" data-user-id="${entry.key.id}">
-              <input type="submit" value="Request Delete">
-            </form>
+            <button class="action-btn" data-action="requestEdit" data-task-id="${task.id}" data-user-id="${entry.key.id}">
+              Request Edit
+            </button>
+            <button class="action-btn" data-action="requestDelete" data-task-id="${task.id}" data-user-id="${entry.key.id}">
+              Request Delete
+            </button>
+          </td>
+          <td>
+            <c:forEach var="request" items="${task.pendingRequests}">
+              ${request.type} request by ${request.requestedBy.firstName} ${request.requestedBy.lastName}<br>
+            </c:forEach>
           </td>
         </tr>
       </c:forEach>
@@ -79,21 +82,16 @@
   <c:if test="${entry.value.size() == 0}">
     <p>No tasks for this user.</p>
   </c:if>
+  <p>Replacement Tokens: ${entry.key.replacementTokens}</p>
+  <p>Deletion Tokens: ${entry.key.deletionTokens}</p>
 </c:forEach>
-
-<th>Pending Requests</th>
-<td>
-  <c:forEach var="request" items="${task.pendingRequests}">
-    ${request.type} request by ${request.requestedBy.firstName} ${request.requestedBy.lastName}<br>
-  </c:forEach>
-</td>
 
 <a href="${pageContext.request.contextPath}/tasks">Back to Manager View</a>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const statusDropdowns = document.querySelectorAll('.status-dropdown');
-    const actionForms = document.querySelectorAll('.action-form');
+    const actionButtons = document.querySelectorAll('.action-btn');
 
     statusDropdowns.forEach(dropdown => {
       dropdown.addEventListener('change', function() {
@@ -101,46 +99,42 @@
       });
     });
 
-    actionForms.forEach(form => {
-      form.addEventListener('submit', function(e) {
+    actionButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
         e.preventDefault();
         sendRequest(this, this.dataset.action);
       });
     });
 
     function sendRequest(element, action) {
-      // Get taskId and userId from data attributes or hidden inputs
-      const taskId = element.dataset.taskId || element.querySelector('[name="taskId"]').value;
-      const userId = element.dataset.userId || element.querySelector('[name="userId"]').value;
+      const taskId = element.dataset.taskId;
+      const userId = element.dataset.userId;
 
-      // Check if taskId and userId are available
+      console.log('Sending request:', { action, taskId, userId });
+
       if (!taskId || !userId) {
         alert('Missing taskId or userId');
         return;
       }
 
-      // Create form data
       const formData = new FormData();
       formData.append('taskId', taskId);
       formData.append('userId', userId);
       formData.append('action', action);
 
-      // If updating status, add the status parameter
       if (action === 'updateStatus') {
         formData.append('status', element.value);
       }
 
-      // Make the POST request using fetch
       fetch('${pageContext.request.contextPath}/employee-tasks', {
         method: 'POST',
         body: formData
       })
               .then(response => response.json())
               .then(data => {
-                // Handle success or error responses from the server
                 if (data.success) {
                   alert('Action completed successfully!');
-                  location.reload(); // Optionally reload the page to reflect changes
+                  location.reload();
                 } else {
                   alert(data.error || 'An error occurred');
                 }

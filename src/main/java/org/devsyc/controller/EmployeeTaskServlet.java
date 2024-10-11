@@ -2,6 +2,7 @@ package org.devsyc.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import jakarta.servlet.annotation.MultipartConfig;
 import org.devsyc.domain.entities.User;
 import org.devsyc.domain.enums.TaskStatus;
 import org.devsyc.dto.TaskDTO;
@@ -14,14 +15,19 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import jakarta.servlet.http.Part;
 
 @WebServlet("/employee-tasks")
+@MultipartConfig
 public class EmployeeTaskServlet extends HttpServlet {
     private TaskService taskService;
     private UserService userService;
@@ -79,9 +85,24 @@ public class EmployeeTaskServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String action = req.getParameter("action");
-        String taskIdStr = req.getParameter("taskId");
-        String userIdStr = req.getParameter("userId");
+        Map<String, String> params = new HashMap<>();
+        String contentType = req.getContentType();
+
+        if (contentType != null && contentType.startsWith("multipart/form-data")) {
+            Collection<Part> parts = req.getParts();
+            for (Part part : parts) {
+                String name = part.getName();
+                String value = new String(part.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+                params.put(name, value);
+            }
+        }
+        System.out.println("Parsed parameters: " + params);
+
+        String action = params.get("action");
+        String taskIdStr = params.get("taskId");
+        String userIdStr = params.get("userId");
+
+        System.out.println("Received parameters: action=" + action + ", taskId=" + taskIdStr + ", userId=" + userIdStr);
 
         JsonObject jsonResponse = new JsonObject();
 
@@ -101,7 +122,7 @@ public class EmployeeTaskServlet extends HttpServlet {
             // Handle the action parameter
             switch (action) {
                 case "updateStatus":
-                    String newStatus = req.getParameter("status");
+                    String newStatus = params.get("status");
                     taskService.updateTaskStatus(taskId, TaskStatus.valueOf(newStatus));
                     break;
                 case "requestEdit":
@@ -117,18 +138,13 @@ public class EmployeeTaskServlet extends HttpServlet {
             jsonResponse.addProperty("success", true);
 
         } catch (NumberFormatException e) {
-            // Handle invalid taskId or userId
             jsonResponse.addProperty("success", false);
             jsonResponse.addProperty("error", "Invalid taskId or userId");
-
         } catch (IllegalArgumentException | IllegalStateException e) {
-            // Handle other application-specific exceptions
             jsonResponse.addProperty("success", false);
             jsonResponse.addProperty("error", e.getMessage());
-
         } catch (Exception e) {
-            // Log any unexpected errors and provide a generic error message
-            e.printStackTrace(); // This will log the stack trace to your server logs
+            e.printStackTrace();
             jsonResponse.addProperty("success", false);
             jsonResponse.addProperty("error", "An unexpected error occurred: " + e.getMessage());
         }

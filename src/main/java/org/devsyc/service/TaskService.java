@@ -1,5 +1,6 @@
 package org.devsyc.service;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.devsyc.domain.entities.Task;
 import org.devsyc.domain.entities.TaskRequest;
@@ -17,15 +18,18 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@ApplicationScoped
 public class TaskService {
     private TaskRepositoryHibernate taskRepository;
     private UserRepositoryHibernate userRepository;
     private TaskRequestRepository taskRequestRepository;
 
+
     public TaskService() {
         this.taskRepository = new TaskRepositoryHibernate();
         this.userRepository = new UserRepositoryHibernate();
         this.taskRequestRepository = new TaskRequestRepository();
+
     }
 
     public List<TaskDTO> getAllTaskDTOs() {
@@ -177,9 +181,9 @@ public class TaskService {
             throw new IllegalStateException("Task or User not found");
         }
 
-        if (task.getAssignedUser().getId().equals(userId)) {
+        /*if (task.getAssignedUser().getId().equals(userId)) {
             throw new IllegalStateException("You cannot request to edit your own task.");
-        }
+        }*/
 
         if (user.getReplacementTokens() <= 0) {
             throw new IllegalStateException("Not enough replacement tokens available.");
@@ -206,10 +210,10 @@ public class TaskService {
             throw new IllegalStateException("Task or User not found");
         }
 
-        if (task.getCreatedBy().getId().equals(userId)) {
-            taskRepository.delete(task);
-            return;
-        }
+        /*if (task.getAssignedUser().getId().equals(userId)) {
+            throw new IllegalStateException("You cannot request to delete your own task.");
+        }*/
+
 
         if (user.getDeletionTokens() <= 0) {
             throw new IllegalStateException("Not enough deletion tokens available.");

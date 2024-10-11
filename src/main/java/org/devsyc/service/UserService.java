@@ -1,6 +1,7 @@
 package org.devsyc.service;
 
 import jakarta.ejb.Stateless;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.devsyc.domain.entities.User;
 import org.devsyc.repository.UserRepositoryHibernate;
 import org.devsyc.util.HibernateUtil;
@@ -10,7 +11,7 @@ import org.hibernate.Transaction;
 import java.time.LocalDate;
 import java.util.List;
 
-@Stateless
+@ApplicationScoped
 public class UserService {
     private UserRepositoryHibernate userRepository = new UserRepositoryHibernate();
 

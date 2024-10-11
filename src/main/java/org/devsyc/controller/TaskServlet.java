@@ -1,5 +1,6 @@
 package org.devsyc.controller;
 
+import jakarta.inject.Inject;
 import org.devsyc.domain.entities.Task;
 import org.devsyc.domain.entities.User;
 import org.devsyc.domain.enums.TaskStatus;
@@ -22,14 +23,12 @@ import java.util.List;
 @WebServlet("/tasks/*")
 public class TaskServlet extends HttpServlet {
 
+    @Inject
     private TaskService taskService;
+
+    @Inject
     private UserService userService;
 
-    @Override
-    public void init() throws ServletException {
-        taskService = new TaskService();
-        userService = new UserService();
-    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -162,6 +161,11 @@ public class TaskServlet extends HttpServlet {
         }
     }
 
+    private User getCreatedByUser() {
+        Long managerId = 4L; // ID of the manager
+        return userService.getUserById(managerId);
+    }
+
     private Task createTaskFromRequest(HttpServletRequest req) {
         String title = req.getParameter("title");
         String description = req.getParameter("description");
@@ -179,6 +183,7 @@ public class TaskServlet extends HttpServlet {
         task.setAssignedUser(assignedUser);
         task.setStatus(status);
         task.setTags(tags);
+        task.setCreatedBy(getCreatedByUser());
 
         return task;
     }
