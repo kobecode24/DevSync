@@ -25,6 +25,36 @@
       font-weight: bold;
       margin-bottom: 10px;
     }
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 50%;
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+    .close:hover, .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -69,6 +99,9 @@
             <button class="action-btn" data-action="requestDelete" data-task-id="${task.id}" data-user-id="${entry.key.id}">
               Request Delete
             </button>
+            <button class="add-task-btn" data-task-id="${task.id}" data-task-title="${task.title}" data-task-desc="${task.description}" data-user-id="${entry.key.id}">
+              Add Task for Me
+            </button>
           </td>
           <td>
             <c:forEach var="request" items="${task.pendingRequests}">
@@ -88,10 +121,45 @@
 
 <a href="${pageContext.request.contextPath}/tasks">Back to Manager View</a>
 
+<!-- The Modal -->
+<div id="addTaskModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Add Task for Me</h2>
+    <form id="addTaskForm">
+      <input type="hidden" id="userId" name="userId">
+      <label for="title">Title:</label>
+      <input type="text" id="title" name="title" required><br>
+
+      <label for="description">Description:</label>
+      <textarea id="description" name="description"></textarea><br>
+
+      <label for="dueDate">Due Date:</label>
+      <input type="datetime-local" id="dueDate" name="dueDate" required><br>
+
+      <label for="status">Status:</label>
+      <select id="status" name="status">
+        <option value="TODO">To Do</option>
+        <option value="IN_PROGRESS">In Progress</option>
+        <option value="DONE">Done</option>
+      </select><br>
+
+      <label for="tags">Tags (comma-separated):</label>
+      <input type="text" id="tags" name="tags"><br>
+
+      <input type="submit" value="Add Task" class="submit-btn">
+    </form>
+  </div>
+</div>
+
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const statusDropdowns = document.querySelectorAll('.status-dropdown');
     const actionButtons = document.querySelectorAll('.action-btn');
+    const addTaskButtons = document.querySelectorAll('.add-task-btn');
+    const modal = document.getElementById('addTaskModal');
+    const span = document.getElementsByClassName('close')[0];
+    const addTaskForm = document.getElementById('addTaskForm');
 
     statusDropdowns.forEach(dropdown => {
       dropdown.addEventListener('change', function() {
@@ -105,6 +173,50 @@
         sendRequest(this, this.dataset.action);
       });
     });
+
+    addTaskButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        document.getElementById('title').value = this.getAttribute('data-task-title');
+        document.getElementById('description').value = this.getAttribute('data-task-desc');
+        document.getElementById('userId').value = this.getAttribute('data-user-id');
+        modal.style.display = 'block';
+      });
+    });
+
+    span.onclick = function() {
+      modal.style.display = 'none';
+    };
+
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = 'none';
+      }
+    };
+
+    addTaskForm.onsubmit = function(e) {
+      e.preventDefault();
+      const formData = new FormData(addTaskForm);
+      formData.append('action', 'addTask');
+
+      fetch('${pageContext.request.contextPath}/employee-tasks', {
+        method: 'POST',
+        body: formData
+      })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  alert('Task added successfully!');
+                  modal.style.display = 'none';
+                  location.reload();
+                } else {
+                  alert(data.error || 'An error occurred');
+                }
+              })
+              .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+              });
+    };
 
     function sendRequest(element, action) {
       const taskId = element.dataset.taskId;

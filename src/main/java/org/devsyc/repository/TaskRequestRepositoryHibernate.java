@@ -8,7 +8,7 @@ import org.hibernate.Transaction;
 
 import java.util.List;
 
-public class TaskRequestRepository {
+public class TaskRequestRepositoryHibernate {
 
     public void save(TaskRequest taskRequest) {
         Transaction transaction = null;

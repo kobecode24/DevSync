@@ -26,7 +26,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToMany(mappedBy = "assignedUser")
+    @OneToMany(mappedBy = "assignedUser", fetch = FetchType.EAGER)
     private List<Task> assignedTasks = new ArrayList<>();
 
     @Column(name = "replacement_tokens")

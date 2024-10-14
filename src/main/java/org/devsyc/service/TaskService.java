@@ -1,7 +1,6 @@
 package org.devsyc.service;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import org.devsyc.domain.entities.Task;
 import org.devsyc.domain.entities.TaskRequest;
 import org.devsyc.domain.entities.User;
@@ -10,7 +9,7 @@ import org.devsyc.domain.enums.RequestType;
 import org.devsyc.domain.enums.TaskStatus;
 import org.devsyc.dto.TaskDTO;
 import org.devsyc.repository.TaskRepositoryHibernate;
-import org.devsyc.repository.TaskRequestRepository;
+import org.devsyc.repository.TaskRequestRepositoryHibernate;
 import org.devsyc.repository.UserRepositoryHibernate;
 import org.hibernate.Hibernate;
 
@@ -22,13 +21,13 @@ import java.util.stream.Collectors;
 public class TaskService {
     private TaskRepositoryHibernate taskRepository;
     private UserRepositoryHibernate userRepository;
-    private TaskRequestRepository taskRequestRepository;
+    private TaskRequestRepositoryHibernate taskRequestRepositoryHibernate;
 
 
     public TaskService() {
         this.taskRepository = new TaskRepositoryHibernate();
         this.userRepository = new UserRepositoryHibernate();
-        this.taskRequestRepository = new TaskRequestRepository();
+        this.taskRequestRepositoryHibernate = new TaskRequestRepositoryHibernate();
 
     }
 
@@ -159,7 +158,7 @@ public class TaskService {
                 ? task.getAssignedUser().getFirstName() + " " + task.getAssignedUser().getLastName()
                 : "Unassigned";
 
-        List<TaskRequest> pendingRequests = taskRequestRepository.findPendingRequestsForTask(task.getId());
+        List<TaskRequest> pendingRequests = taskRequestRepositoryHibernate.findPendingRequestsForTask(task.getId());
 
         return new TaskDTO(
                 task.getId(),
@@ -196,7 +195,7 @@ public class TaskService {
         request.setType(RequestType.EDIT);
         request.setRequestedAt(LocalDateTime.now());
 
-        taskRequestRepository.save(request);
+        taskRequestRepositoryHibernate.save(request);
 
         user.setReplacementTokens(user.getReplacementTokens() - 1);
         userRepository.update(user);
@@ -226,7 +225,7 @@ public class TaskService {
         request.setType(RequestType.DELETE);
         request.setRequestedAt(LocalDateTime.now());
 
-        taskRequestRepository.save(request);
+        taskRequestRepositoryHibernate.save(request);
 
         user.setDeletionTokens(user.getDeletionTokens() - 1);
         userRepository.update(user);
