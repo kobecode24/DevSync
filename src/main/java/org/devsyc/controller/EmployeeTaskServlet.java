@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
 @WebServlet("/employee-tasks")
 @MultipartConfig
 public class EmployeeTaskServlet extends HttpServlet {
-    private TaskService taskService;
-    private UserService userService;
+    TaskService taskService;
+    UserService userService;
 
     @Override
     public void init() throws ServletException {

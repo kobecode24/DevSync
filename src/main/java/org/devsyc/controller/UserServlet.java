@@ -18,7 +18,7 @@ public class UserServlet extends HttpServlet {
     private static final String USER_LIST_PATH = "/users";
     private static final String ADD_USER_PATH = "/users/add";
 
-    private UserRepositoryHibernate userRepository;
+    UserRepositoryHibernate userRepository;
 
     @Override
     public void init() throws ServletException {

@@ -24,10 +24,10 @@ import java.util.List;
 public class TaskServlet extends HttpServlet {
 
     @Inject
-    private TaskService taskService;
+    TaskService taskService;
 
     @Inject
-    private UserService userService;
+    UserService userService;
 
 
     @Override

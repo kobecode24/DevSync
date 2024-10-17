@@ -57,4 +57,17 @@ public class Task {
         this.createdBy = createdBy;
         this.tags = tags;
     }
+
+    public Task(Long id, String title, String description, LocalDateTime creationDate, LocalDateTime dueDate, TaskStatus status, User assignedUser, User createdBy, List<String> tags) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.creationDate = creationDate != null ? creationDate : LocalDateTime.now();
+        this.dueDate = dueDate;
+        this.status = status != null ? status : TaskStatus.TODO;
+        this.assignedUser = assignedUser;
+        this.createdBy = createdBy;
+        this.tags = tags;
+    }
+
 }

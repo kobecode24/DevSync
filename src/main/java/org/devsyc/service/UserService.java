@@ -1,6 +1,5 @@
 package org.devsyc.service;
 
-import jakarta.ejb.Stateless;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.devsyc.domain.entities.User;
 import org.devsyc.repository.UserRepositoryHibernate;
@@ -13,7 +12,15 @@ import java.util.List;
 
 @ApplicationScoped
 public class UserService {
-    private UserRepositoryHibernate userRepository = new UserRepositoryHibernate();
+    private UserRepositoryHibernate userRepository;
+    public UserService() {
+        userRepository = new UserRepositoryHibernate();
+    }
+
+    public UserService(UserRepositoryHibernate userRepository) {
+        this.userRepository = userRepository;
+    }
+
 
     public List<User> getAllUsers() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -27,7 +34,7 @@ public class UserService {
         }
     }
 
-    public void createUser(User user) {
+    public User createUser(User user) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
@@ -39,6 +46,7 @@ public class UserService {
             }
             e.printStackTrace();
         }
+        return user;
     }
 
     public void updateUser(User user) {
@@ -80,9 +88,14 @@ public class UserService {
         }
     }
 
-    public void resetTokensIfNeeded(User user) {
+    public User resetTokensIfNeeded(User user) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+
+            // Refresh the user entity to ensure we have the latest data
+            user = session.get(User.class, user.getId());
+
             LocalDate now = LocalDate.now();
             if (!now.equals(user.getLastTokenReset())) {
                 user.resetDailyTokens();
@@ -90,16 +103,17 @@ public class UserService {
                     user.resetMonthlyTokens();
                 }
                 user.setLastTokenReset(now);
-
-                transaction = session.beginTransaction();
                 session.update(user);
-                transaction.commit();
             }
+
+            transaction.commit();
+            return user;
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
             }
             e.printStackTrace();
+            throw e;
         }
     }
 
