@@ -1,5 +1,6 @@
 package org.devsyc.service;
 
+import lombok.Value;
 import org.devsyc.domain.entities.User;
 import org.devsyc.domain.enums.Role;
 import org.devsyc.repository.UserRepositoryHibernate;

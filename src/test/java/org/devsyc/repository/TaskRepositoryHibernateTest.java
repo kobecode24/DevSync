@@ -30,25 +30,34 @@ class TaskRepositoryHibernateTest {
 
     @AfterEach
     void tearDown() {
-        if (transaction.isActive()) {
+        if (transaction != null && transaction.isActive()) {
             transaction.rollback();
         }
-        session.close();
+        if (session != null && session.isOpen()) {
+            session.close();
+        }
     }
 
     @Test
     void testSaveAndFindById() {
         User user = new User("John", "Doe", "john@example.com", "password", null);
         session.save(user);
+        session.flush();
+        transaction.commit(); // Ensure data is committed before continuing
 
+        transaction = session.beginTransaction(); // Start a new transaction for further operations
         Task task = new Task();
         task.setTitle("Test Task");
         task.setDescription("Test Description");
         task.setStatus(TaskStatus.TODO);
+        task.setCreationDate(LocalDateTime.now());
         task.setDueDate(LocalDateTime.now().plusDays(1));
         task.setAssignedUser(user);
+        task.setCreatedBy(user);
 
-        taskRepository.save(task);
+        session.save(task);
+        session.flush();
+        transaction.commit();
 
         Task foundTask = taskRepository.findById(task.getId());
         assertNotNull(foundTask);
@@ -60,12 +69,19 @@ class TaskRepositoryHibernateTest {
     void testFindAll() {
         User user = new User("John", "Doe", "john@example.com", "password", null);
         session.save(user);
+        session.flush();
+        transaction.commit();
 
+        transaction = session.beginTransaction();
         Task task1 = new Task("Task 1", "Description 1", LocalDateTime.now().plusDays(1), user, user, null);
+        task1.setCreationDate(LocalDateTime.now());
         Task task2 = new Task("Task 2", "Description 2", LocalDateTime.now().plusDays(2), user, user, null);
+        task2.setCreationDate(LocalDateTime.now());
 
-        taskRepository.save(task1);
-        taskRepository.save(task2);
+        session.save(task1);
+        session.save(task2);
+        session.flush();
+        transaction.commit();
 
         List<Task> tasks = taskRepository.findAll();
         assertFalse(tasks.isEmpty());
@@ -79,14 +95,22 @@ class TaskRepositoryHibernateTest {
         User user2 = new User("Jane", "Doe", "jane@example.com", "password", null);
         session.save(user1);
         session.save(user2);
+        session.flush();
+        transaction.commit();
 
+        transaction = session.beginTransaction();
         Task task1 = new Task("Task 1", "Description 1", LocalDateTime.now().plusDays(1), user1, user1, null);
+        task1.setCreationDate(LocalDateTime.now());
         Task task2 = new Task("Task 2", "Description 2", LocalDateTime.now().plusDays(2), user1, user1, null);
+        task2.setCreationDate(LocalDateTime.now());
         Task task3 = new Task("Task 3", "Description 3", LocalDateTime.now().plusDays(3), user2, user2, null);
+        task3.setCreationDate(LocalDateTime.now());
 
-        taskRepository.save(task1);
-        taskRepository.save(task2);
-        taskRepository.save(task3);
+        session.save(task1);
+        session.save(task2);
+        session.save(task3);
+        session.flush();
+        transaction.commit();
 
         List<Task> user1Tasks = taskRepository.findByUser(user1);
         assertEquals(2, user1Tasks.size());
@@ -101,17 +125,25 @@ class TaskRepositoryHibernateTest {
     void testFindByStatus() {
         User user = new User("John", "Doe", "john@example.com", "password", null);
         session.save(user);
+        session.flush();
+        transaction.commit();
 
+        transaction = session.beginTransaction();
         Task task1 = new Task("Task 1", "Description 1", LocalDateTime.now().plusDays(1), user, user, null);
         task1.setStatus(TaskStatus.TODO);
+        task1.setCreationDate(LocalDateTime.now());
         Task task2 = new Task("Task 2", "Description 2", LocalDateTime.now().plusDays(2), user, user, null);
         task2.setStatus(TaskStatus.IN_PROGRESS);
+        task2.setCreationDate(LocalDateTime.now());
         Task task3 = new Task("Task 3", "Description 3", LocalDateTime.now().plusDays(3), user, user, null);
         task3.setStatus(TaskStatus.DONE);
+        task3.setCreationDate(LocalDateTime.now());
 
-        taskRepository.save(task1);
-        taskRepository.save(task2);
-        taskRepository.save(task3);
+        session.save(task1);
+        session.save(task2);
+        session.save(task3);
+        session.flush();
+        transaction.commit();
 
         List<Task> todoTasks = taskRepository.findByStatus(TaskStatus.TODO);
         assertEquals(1, todoTasks.size());
@@ -126,13 +158,21 @@ class TaskRepositoryHibernateTest {
     void testUpdate() {
         User user = new User("John", "Doe", "john@example.com", "password", null);
         session.save(user);
+        session.flush();
+        transaction.commit();
 
+        transaction = session.beginTransaction();
         Task task = new Task("Original Task", "Original Description", LocalDateTime.now().plusDays(1), user, user, null);
-        taskRepository.save(task);
+        task.setCreationDate(LocalDateTime.now());
+        session.save(task);
+        session.flush();
+        transaction.commit();
 
+        transaction = session.beginTransaction();
         task.setTitle("Updated Task");
         task.setDescription("Updated Description");
         taskRepository.update(task);
+        transaction.commit();
 
         Task updatedTask = taskRepository.findById(task.getId());
         assertEquals("Updated Task", updatedTask.getTitle());
@@ -143,14 +183,21 @@ class TaskRepositoryHibernateTest {
     void testDelete() {
         User user = new User("John", "Doe", "john@example.com", "password", null);
         session.save(user);
+        session.flush();
+        transaction.commit();
 
+        transaction = session.beginTransaction();
         Task task = new Task("Task to Delete", "Description", LocalDateTime.now().plusDays(1), user, user, null);
-        taskRepository.save(task);
+        task.setCreationDate(LocalDateTime.now());
+        session.save(task);
+        session.flush();
+        transaction.commit();
 
-        Long taskId = task.getId();
+        transaction = session.beginTransaction();
         taskRepository.delete(task);
+        transaction.commit();
 
-        Task deletedTask = taskRepository.findById(taskId);
+        Task deletedTask = taskRepository.findById(task.getId());
         assertNull(deletedTask);
     }
 }

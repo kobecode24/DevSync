@@ -88,13 +88,13 @@ class UserRepositoryHibernateTest {
 
     @Test
     void testFindByEmail() {
-        User user = new User("John", "Doe", "john@example.com", "password", Role.USER);
+        User user = new User("John", "Doe", "john5@example.com", "password", Role.USER);
         userRepository.save(user);
 
-        User foundUser = userRepository.findByEmail("john@example.com");
+        User foundUser = userRepository.findByEmail("john5@example.com");
         assertNotNull(foundUser);
         assertEquals("John", foundUser.getFirstName());
-        assertEquals("john@example.com", foundUser.getEmail());
+        assertEquals("john5@example.com", foundUser.getEmail());
 
         User nonExistentUser = userRepository.findByEmail("nonexistent@example.com");
         assertNull(nonExistentUser);

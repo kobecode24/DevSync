@@ -61,7 +61,7 @@ public class EmployeeTaskServlet extends HttpServlet {
                                     taskMap.put("id", task.getId());
                                     taskMap.put("title", task.getTitle());
                                     taskMap.put("description", task.getDescription());
-                                    taskMap.put("dueDate", task.getDueDate().format(formatter));
+                                    taskMap.put("dueDate", task.getDueDate() != null ? task.getDueDate().format(formatter) : "N/A");
                                     taskMap.put("status", task.getStatus());
                                     taskMap.put("tags", task.getTags());
                                     taskMap.put("assignedUserName", task.getAssignedUserName());
@@ -84,10 +84,25 @@ public class EmployeeTaskServlet extends HttpServlet {
 
         if (contentType != null && contentType.startsWith("multipart/form-data")) {
             Collection<Part> parts = req.getParts();
-            for (Part part : parts) {
-                String name = part.getName();
-                String value = new String(part.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-                params.put(name, value);
+            if (!parts.isEmpty()) {
+                for (Part part : parts) {
+                    String name = part.getName();
+                    String value = new String(part.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+                    params.put(name, value);
+                }
+            } else {
+                // Handle the case when parts are empty (for testing purposes)
+                Enumeration<String> parameterNames = req.getParameterNames();
+                while (parameterNames.hasMoreElements()) {
+                    String paramName = parameterNames.nextElement();
+                    params.put(paramName, req.getParameter(paramName));
+                }
+            }
+        } else {
+            Enumeration<String> parameterNames = req.getParameterNames();
+            while (parameterNames.hasMoreElements()) {
+                String paramName = parameterNames.nextElement();
+                params.put(paramName, req.getParameter(paramName));
             }
         }
 
