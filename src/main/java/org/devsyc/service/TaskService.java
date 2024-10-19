@@ -83,11 +83,6 @@ public class TaskService {
         return tasks.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    public List<TaskDTO> getAvailableTasks() {
-        List<Task> tasks = taskRepository.findByAssignedUserIsNull();
-        return tasks.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-
     public void updateTaskStatus(long taskId, TaskStatus newStatus) {
         Task task = taskRepository.findById(taskId);
         if (task != null) {
@@ -113,27 +108,6 @@ public class TaskService {
 
         task.setAssignedUser(user);
         taskRepository.update(task);
-    }
-
-    public void replaceTask(Long taskId, Long userId) throws IllegalStateException {
-        Task task = taskRepository.findById(taskId);
-        User user = userRepository.findById(userId);
-
-        if (task == null || user == null) {
-            throw new IllegalStateException("Task or User not found");
-        }
-
-        if (task.getAssignedUser().getId().equals(userId)) {
-            throw new IllegalStateException("You cannot replace a task assigned to yourself.");
-        }
-
-        if (user.useReplacementToken()) {
-            task.setAssignedUser(user);
-            taskRepository.update(task);
-            userRepository.update(user);
-        } else {
-            throw new IllegalStateException("No replacement tokens available.");
-        }
     }
 
     private void validateTask(Task task) {

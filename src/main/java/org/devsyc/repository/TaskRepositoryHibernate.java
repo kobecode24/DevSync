@@ -82,11 +82,4 @@ public class TaskRepositoryHibernate {
                     .list();
         }
     }
-
-    public List<Task> findByAssignedUserIsNull() {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("FROM Task t WHERE t.assignedUser IS NULL", Task.class).list();
-        }
-    }
-
 }

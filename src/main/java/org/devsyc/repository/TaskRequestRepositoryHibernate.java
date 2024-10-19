@@ -24,12 +24,6 @@ public class TaskRequestRepositoryHibernate {
         }
     }
 
-    public TaskRequest findById(Long id) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.get(TaskRequest.class, id);
-        }
-    }
-
     public List<TaskRequest> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("FROM TaskRequest", TaskRequest.class).list();

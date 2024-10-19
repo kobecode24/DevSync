@@ -54,6 +54,7 @@ class UserServiceTest {
         assertTrue(users.stream().anyMatch(u -> "Jane".equals(u.getFirstName())));
     }
 
+    @DisplayName("Test get all users when there are no users")
     @Test
     void testGetUserById() {
         User user = new User(null, "John", "Doe", "john@example.com", "password", Role.USER);

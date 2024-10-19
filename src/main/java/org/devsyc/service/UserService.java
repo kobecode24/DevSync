@@ -165,20 +165,6 @@ public class UserService {
         }
     }
 
-    public void decrementReplacementToken(User user) {
-        if (user.getReplacementTokens() > 0) {
-            user.setReplacementTokens(user.getReplacementTokens() - 1);
-            // In real application, update the database
-        }
-    }
-
-    public void decrementDeletionToken(User user) {
-        if (user.getDeletionTokens() > 0) {
-            user.setDeletionTokens(user.getDeletionTokens() - 1);
-            // In real application, update the database
-        }
-    }
-
     public void resetDailyTokens() {
         List<User> users = userRepository.findAll();
         for (User user : users) {
