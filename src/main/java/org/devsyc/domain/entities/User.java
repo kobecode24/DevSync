@@ -55,15 +55,6 @@ public class User {
         this.role = role;
     }
 
-
-    public void resetDailyTokens() {
-        this.replacementTokens = 2;
-    }
-
-    public void resetMonthlyTokens() {
-        this.deletionTokens = 1;
-    }
-
     public boolean useReplacementToken() {
         if (replacementTokens > 0) {
             replacementTokens--;

@@ -42,11 +42,6 @@ public class TaskService {
         return taskRepository.findById(id);
     }
 
-    public TaskDTO getTaskDTOById(Long id) {
-        Task task = taskRepository.findById(id);
-        return task != null ? convertToDTO(task) : null;
-    }
-
     public void createTask(Task task) {
         validateTask(task);
         task.setCreationDate(LocalDateTime.now());

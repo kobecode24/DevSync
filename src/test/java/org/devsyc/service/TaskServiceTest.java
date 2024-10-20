@@ -87,7 +87,7 @@ class TaskServiceTest {
     @Test
     void testDeleteTask() {
         User user = new User(1L, "John", "Doe", "john@example.com", "password", Role.USER);
-        Task task = new Task(1L, "Task to Delete", "Description", LocalDateTime.now(), LocalDateTime.now().plusDays(1), TaskStatus.TODO, user, user, Arrays.asList("tag1"));
+        Task task = new Task(1L, "Task to Delete", "Description", LocalDateTime.now(), LocalDateTime.now().plusDays(1), TaskStatus.TODO, user, user, List.of("tag1"));
 
         when(taskRepository.findById(1L)).thenReturn(task);
         when(userRepository.findById(1L)).thenReturn(user);
